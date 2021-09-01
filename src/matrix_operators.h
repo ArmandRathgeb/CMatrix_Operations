@@ -16,17 +16,17 @@ typedef struct Matrices {
 } Matrix;
 
 // Dynamic array memory allocation
-Matrix ma_alloc(Matrix);
+Matrix ma_alloc(Matrix*);
 
-Matrix add(Matrix, Matrix);
+Matrix add(Matrix*, Matrix*);
 
-Matrix subtract(Matrix, Matrix);
+Matrix subtract(Matrix*, Matrix*);
 
-Matrix multiply(Matrix, Matrix);
+Matrix multiply(Matrix*, Matrix*);
 
-Matrix divide(Matrix, Matrix);
+Matrix divide(Matrix*, Matrix*);
 
-void printMatrix(Matrix);
+void printMatrix(Matrix*);
 
 // Create an identity matrix
 Matrix identityMatrix(size_t , size_t );
