@@ -6,8 +6,9 @@
 
 #ifndef _MATRIX_OPERATORS_H_
 #define _MATRIX_OPERATORS_H_
-#include <stdlib.h>
-#include <stdio.h>
+#include <stdlib.h> // For size_t and malloc
+#include <stdio.h> // For printf
+#include <string.h> // For memset
 
 typedef struct Matrices {
   size_t row;
@@ -35,5 +36,8 @@ void printMatrix(Matrix*);
 
 // Create an identity matrix
 Matrix identityMatrix(size_t);
+
+// Creates an m*n matrix of ones
+Matrix ones(size_t, size_t);
 
 #endif

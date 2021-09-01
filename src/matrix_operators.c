@@ -88,3 +88,13 @@ Matrix identityMatrix(size_t size){
     returnMatrix.array[i][i] = 1;
   return returnMatrix;
 }
+
+Matrix ones(size_t m, size_t n){
+  Matrix one = {m,n};
+  one = ma_alloc(&one);
+  for(int i = 0; i < m; i++){
+    for(int j = 0; j < n; j++)
+      one.array[i][j] = 1;
+  }
+  return one;
+}
