@@ -7,8 +7,9 @@
 #include "matrix_operators.h"
 
 // Dynamically allocate memory for matrix arrays
-Matrix ma_alloc(Matrix *m){
-
+Matrix ma_alloc(Matrix *m, size_t x, size_t y){
+  m->row = x;
+  m->col = y;
   m->array = (float**)malloc(m->row * sizeof(float*));
   for(int i = 0; i < m->col; i++)
     m->array[i] = (float*)malloc(m->col * sizeof(float));
@@ -23,14 +24,31 @@ Matrix ma_alloc(Matrix *m){
   return *m;
 }
 
+Matrix ma_realloc(Matrix *m, size_t x, size_t y){
+  if(m->array == NULL) {
+    *m = ma_alloc(m, x, y);
+  }
+  else{
+    float **temp = (float**)realloc(m->array, x * sizeof(float*));
+    for(int i = 0; i < y; i++){
+      float* temp_1 = NULL;
+      if(m->col > i)
+        temp_1 = m->array[i];
+      temp_1 = (float*)realloc(temp, y* sizeof(float));
+      m->array[i] = temp_1;
+    }
+    m->row = x;
+    m->col = y;
+  }
+  return *m;
+}
+
 Matrix add(Matrix *m1, Matrix *m2){
-  Matrix returnMatrix = {m1->col, m1->row};
     
   if((m1->row != m2->row) && (m1->col != m2->col)){
     return *m1;
   }
-
-  returnMatrix = ma_alloc(&returnMatrix);
+  Matrix returnMatrix = ma_alloc(&returnMatrix,m1->col,m1->row);
   for(int i = 0; i < m1->row; i++){
     for(int j = 0; j < m1->col; j++){
       returnMatrix.array[i][j] = 
@@ -51,8 +69,7 @@ Matrix subtract(Matrix *m1, Matrix *m2){
 Matrix multiply(Matrix *m1, Matrix *m2){
   if(m1->col != m2->row) return *m1;
   register int i,j,k;
-  Matrix returnMatrix = {m1->row,m2->col};
-  returnMatrix = ma_alloc(&returnMatrix);
+  Matrix returnMatrix = ma_alloc(&returnMatrix,m1->row,m2->col);
 
   for(i = 0; i < m1->row; ++i){
     for(j = 0; j < m2->col; ++j){
@@ -82,16 +99,14 @@ void printMatrix(Matrix *m){
 }
 
 Matrix identityMatrix(size_t size){
-  Matrix returnMatrix = {size, size};
-  returnMatrix = ma_alloc(&returnMatrix);
+  Matrix returnMatrix = ma_alloc(&returnMatrix,size,size);
   for(int i = 0; i < size; i++)
     returnMatrix.array[i][i] = 1;
   return returnMatrix;
 }
 
 Matrix ones(size_t m, size_t n){
-  Matrix one = {m,n};
-  one = ma_alloc(&one);
+  Matrix one = ma_alloc(&one, m, n);
   for(int i = 0; i < m; i++){
     for(int j = 0; j < n; j++)
       one.array[i][j] = 1;

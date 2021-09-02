@@ -8,7 +8,6 @@
 #define _MATRIX_OPERATORS_H_
 #include <stdlib.h> // For size_t and malloc
 #include <stdio.h> // For printf
-#include <string.h> // For memset
 
 typedef struct Matrices {
   size_t row;
@@ -22,10 +21,15 @@ typedef struct Matrices {
  * Returns array as a NULL if not enough
  * memory. Returns all memory zeroed out.
  */
-Matrix ma_alloc(Matrix*);
+Matrix ma_alloc(Matrix*, size_t, size_t);
+
+Matrix ma_realloc(Matrix*, size_t, size_t);
 
 Matrix add(Matrix*, Matrix*);
 
+/* Watch out when calling subtract,
+ * it will negate the second array.
+ */
 Matrix subtract(Matrix*, Matrix*);
 
 Matrix multiply(Matrix*, Matrix*);
