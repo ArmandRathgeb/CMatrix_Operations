@@ -1,7 +1,7 @@
 /*
  * Implementation for matrix_operators.h
  * Author: Armand Rathgeb
- * Last modified: 9/01/2021
+ * Last modified: 9/05/2021
  */
 
 #include "matrix_operators.h"
@@ -24,21 +24,21 @@ Matrix ma_alloc(Matrix *m, size_t x, size_t y){
   return *m;
 }
 
-Matrix ma_realloc(Matrix *m, size_t x, size_t y){
-  if(m->array == NULL) {
-    *m = ma_alloc(m, x, y);
-  }
-  else{
-    m->array = (float**)realloc(m->array, x*sizeof(float*));
-    for(int i = 0; i < x; i++){
-      m->array[i] = (float*)realloc(m->array[i], y*sizeof(float));
-    } 
-    m->row = x;
-    m->col = y;
-  }
-  return *m;
+/*
+ * Dynamic reallocation of memory
+ */
+void ma_realloc(Matrix *m, size_t x, size_t y){
+  m->array = (float**)realloc(m->array, x*sizeof(float*));
+  for(int i = 0; i < x; i++){
+    m->array[i] = (float*)realloc(m->array[i], y*sizeof(float));
+  } 
+  m->row = x;
+  m->col = y;
 }
 
+/*
+ * Always free dynamically allocated memory
+ */
 void ma_free(Matrix *m){
   for(int i = 0; i < m->col; i++){
     free(m->array[i]);
@@ -48,7 +48,7 @@ void ma_free(Matrix *m){
 
 Matrix add(Matrix *m1, Matrix *m2){
     
-  if((m1->row != m2->row) && (m1->col != m2->col)){
+  if((m1->row != m2->row) || (m1->col != m2->col)){
     return *m1;
   }
   Matrix returnMatrix = ma_alloc(&returnMatrix,m1->col,m1->row);
@@ -62,11 +62,15 @@ Matrix add(Matrix *m1, Matrix *m2){
 } 
 
 Matrix subtract(Matrix *m1, Matrix *m2){
+  if( (m1->row != m2->row) || (m1->col != m2->row)){
+    return *m1;
+  }
+  Matrix returnMatrix = ma_alloc(&returnMatrix,m1->row, m1->col);
   for(int i = 0; i < m2->row; i++)
     for(int j = 0; j < m2->col; j++)
-      m2->array[i][j]  = -m2->array[i][j];
-  // Subtraction is negative addition
-  return add(m1,m2);
+      returnMatrix.array[i][j] = 
+        m1->array[i][j] - m2->array[i][j];
+  return returnMatrix;
 }
 
 Matrix multiply(Matrix *m1, Matrix *m2){
@@ -88,8 +92,34 @@ Matrix multiply(Matrix *m1, Matrix *m2){
 
 }
 
-Matrix divide(Matrix *m1, Matrix *m2){
+Matrix divide(Matrix *m1, Matrix m2){
+  if(m2.row != m2.col){
+    printf("Divisor must be a square matrix!\n");
+    return *m1;
+  }
+  float factor = 1/det(&m2);
+  for(int i = 0; i < m2.row; i++){
+    for(int j = 0; j < m2.col; j++){
+      if( (j+1+i) % 2 == 0)
+        m2.array[i][j] *= -1;
+    }
+  }
 
+  return multiply(m1,&m2);
+}
+
+float det(Matrix* m){
+
+}
+
+void transpose(Matrix* m){
+  Matrix temp = *m;
+  ma_realloc(m, m->col, m->row);
+  for(int i = 0; i < m->row; i++){
+    for(int j = 0; j < m->col; j++){
+    m->array[i][j] = temp.array[j][i];    
+    }
+  }
 }
 
 void printMatrix(Matrix *m){

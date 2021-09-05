@@ -1,7 +1,7 @@
 /*
  * Header file for matrix operations.
  * Author: Armand Rathgeb
- * Last modified: 9/10/2021
+ * Last modified: 9/05/2021
  */
 
 #ifndef _MATRIX_OPERATORS_H_
@@ -16,27 +16,33 @@ typedef struct Matrices {
 } Matrix;
 
 /* Dynamic array memory allocation
- * Make sure to always free the memory
- * allocated with `free(matrix.array);`
  * Returns array as a NULL if not enough
  * memory. Returns all memory zeroed out.
  */
 Matrix ma_alloc(Matrix*, size_t, size_t);
 
-Matrix ma_realloc(Matrix*, size_t, size_t);
+//Dynamic reallocation of memory
+void ma_realloc(Matrix*, size_t, size_t);
 
+// Freeing of dynamically allocated memory
 void ma_free(Matrix*);
 
 Matrix add(Matrix*, Matrix*);
 
-/* Watch out when calling subtract,
- * it will negate the second array.
- */
 Matrix subtract(Matrix*, Matrix*);
 
 Matrix multiply(Matrix*, Matrix*);
 
-Matrix divide(Matrix*, Matrix*);
+/*
+ * First one passed by reference for speed.
+ * Second passed by value to prevent it from
+ * being altered.
+ */
+Matrix divide(Matrix*, Matrix);
+
+float det(Matrix*);
+
+void transpose(Matrix*);
 
 void printMatrix(Matrix*);
 
