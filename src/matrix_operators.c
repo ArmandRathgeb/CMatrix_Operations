@@ -10,9 +10,9 @@
 Matrix ma_alloc(Matrix *m, size_t x, size_t y){
   m->row = x;
   m->col = y;
-  m->array = (float**)malloc(m->row * sizeof(float*));
+  m->array = (float**)malloc(m->col * sizeof(float*));
   for(int i = 0; i < m->col; i++)
-    m->array[i] = (float*)malloc(m->col * sizeof(float));
+    m->array[i] = (float*)malloc(m->row * sizeof(float));
 
   if(m->array == NULL) return *m;
 
@@ -29,18 +29,21 @@ Matrix ma_realloc(Matrix *m, size_t x, size_t y){
     *m = ma_alloc(m, x, y);
   }
   else{
-    float **temp = (float**)realloc(m->array, x * sizeof(float*));
-    for(int i = 0; i < y; i++){
-      float* temp_1 = NULL;
-      if(m->col > i)
-        temp_1 = m->array[i];
-      temp_1 = (float*)realloc(temp, y* sizeof(float));
-      m->array[i] = temp_1;
-    }
+    m->array = (float**)realloc(m->array, x*sizeof(float*));
+    for(int i = 0; i < x; i++){
+      m->array[i] = (float*)realloc(m->array[i], y*sizeof(float));
+    } 
     m->row = x;
     m->col = y;
   }
   return *m;
+}
+
+void ma_free(Matrix *m){
+  for(int i = 0; i < m->col; i++){
+    free(m->array[i]);
+  }
+  free(m->array);
 }
 
 Matrix add(Matrix *m1, Matrix *m2){

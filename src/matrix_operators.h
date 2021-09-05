@@ -25,6 +25,8 @@ Matrix ma_alloc(Matrix*, size_t, size_t);
 
 Matrix ma_realloc(Matrix*, size_t, size_t);
 
+void ma_free(Matrix*);
+
 Matrix add(Matrix*, Matrix*);
 
 /* Watch out when calling subtract,
