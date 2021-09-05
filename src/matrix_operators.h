@@ -22,7 +22,7 @@ typedef struct Matrices {
 Matrix ma_alloc(Matrix*, size_t, size_t);
 
 //Dynamic reallocation of memory
-void ma_realloc(Matrix*, size_t, size_t);
+Matrix ma_realloc(Matrix*, size_t, size_t);
 
 // Freeing of dynamically allocated memory
 void ma_free(Matrix*);
@@ -40,8 +40,6 @@ Matrix multiply(Matrix*, Matrix*);
  */
 Matrix divide(Matrix*, Matrix);
 
-float det(Matrix*);
-
 void transpose(Matrix*);
 
 void printMatrix(Matrix*);
@@ -51,5 +49,12 @@ Matrix identityMatrix(size_t);
 
 // Creates an m*n matrix of ones
 Matrix ones(size_t, size_t);
+
+/*
+ * Concatenate two matrices.
+ * Set the order to 1 to concatenate along the rows.
+ * Set the order to 0 to concatenate along the columns.
+ */
+Matrix cat(Matrix, Matrix, int);
 
 #endif

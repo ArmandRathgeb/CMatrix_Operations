@@ -27,13 +27,14 @@ Matrix ma_alloc(Matrix *m, size_t x, size_t y){
 /*
  * Dynamic reallocation of memory
  */
-void ma_realloc(Matrix *m, size_t x, size_t y){
+Matrix ma_realloc(Matrix *m, size_t x, size_t y){
   m->array = (float**)realloc(m->array, x*sizeof(float*));
   for(int i = 0; i < x; i++){
     m->array[i] = (float*)realloc(m->array[i], y*sizeof(float));
   } 
   m->row = x;
   m->col = y;
+  return *m;
 }
 
 /*
@@ -97,24 +98,23 @@ Matrix divide(Matrix *m1, Matrix m2){
     printf("Divisor must be a square matrix!\n");
     return *m1;
   }
-  float factor = 1/det(&m2);
-  for(int i = 0; i < m2.row; i++){
-    for(int j = 0; j < m2.col; j++){
-      if( (j+1+i) % 2 == 0)
-        m2.array[i][j] *= -1;
-    }
-  }
+  m2 = cat(m2, identityMatrix(m2.row),0);
+  /* float factor = 1/det(&m2); */
+  /* for(int i = 0; i < m2.row; i++){ */
+  /*   for(int j = 0; j < m2.col; j++){ */
+  /*     if( (j+1+i) % 2 == 0) */
+  /*       m2.array[i][j] *= -1; */
+  /*   } */
+  /* } */
+
+
 
   return multiply(m1,&m2);
 }
 
-float det(Matrix* m){
-
-}
-
 void transpose(Matrix* m){
   Matrix temp = *m;
-  ma_realloc(m, m->col, m->row);
+  *m = ma_realloc(m, m->col, m->row);
   for(int i = 0; i < m->row; i++){
     for(int j = 0; j < m->col; j++){
     m->array[i][j] = temp.array[j][i];    
@@ -145,4 +145,42 @@ Matrix ones(size_t m, size_t n){
       one.array[i][j] = 1;
   }
   return one;
+}
+
+Matrix cat(Matrix m, Matrix n, int order){
+  Matrix catted;
+  switch(order){
+    case 0:
+      if(m.row != n.row) break;
+      catted = ma_alloc(&catted, m.row, (m.col + n.col));
+      for(int i = 0; i < catted.row; i++){
+        for(int j = 0; j < catted.col; j++){
+          int coltemp = j - m.col;
+          if(coltemp < 0){
+            catted.array[i][j] = m.array[i][j];
+          }
+          else{
+            catted.array[i][j] = n.array[i][coltemp];
+          }
+          // Debug print
+          printf("%d\t%d\t%.2f\t%.2f\n", j, coltemp, n.array[i][coltemp], catted.array[i][j]);
+        }
+      }
+      /* catted = ma_realloc(&m, m.row, (m.col + n.col)); */
+      /* for(int i = 0; i < catted.row; i++){ */
+      /*   for(int j = n.col; j < catted.col; j++){ */
+      /*     int coltemp = j - n.col; */
+      /*     catted.array[i][j] = n.array[i][coltemp]; */
+      /*   } */
+      /* } */
+      return catted;
+    case 1:
+      if(m.col != n.col) break;
+      ma_realloc(&m, (m.row + n.row), m.col);
+
+      break;
+    default:
+      printf("Bad order option.\n");
+  }
+  return m;
 }
