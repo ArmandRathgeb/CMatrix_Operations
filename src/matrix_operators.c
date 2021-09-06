@@ -5,22 +5,25 @@
  */
 
 #include "matrix_operators.h"
+#include <stdlib.h>
 
 // Dynamically allocate memory for matrix arrays
 Matrix ma_alloc(Matrix *m, size_t x, size_t y){
   m->row = x;
   m->col = y;
-  m->array = (float**)malloc(m->col * sizeof(float*));
-  for(int i = 0; i < m->col; i++)
-    m->array[i] = (float*)malloc(m->row * sizeof(float));
+  m->array = (float**)calloc(y, sizeof(float*));
+  if(!m->array){
+    printf("Allocation failed at %lu bytes!\n", sizeof(float*)*y);
+    exit(EXIT_FAILURE);
+  }
 
-  if(m->array == NULL) return *m;
-
-  // Zero out the memory in case the OS doesn't do it
-  // Prevents memory errors and helps portability
-  for(int i = 0; i < m->row; i++)
-    for(int j = 0; j < m->col; j++)
-      m->array[i][j] = 0;
+  for(int i = 0; i < m->col; i++){
+    m->array[i] = (float*)calloc(x, sizeof(float));
+    if(!m->array[i]){
+      printf("Allocation failed at %lu bytes!\n", sizeof(float)*i*x);
+      exit(EXIT_FAILURE);
+    }
+  }
   return *m;
 }
 
@@ -29,8 +32,16 @@ Matrix ma_alloc(Matrix *m, size_t x, size_t y){
  */
 Matrix ma_realloc(Matrix *m, size_t x, size_t y){
   m->array = (float**)realloc(m->array, x*sizeof(float*));
+  if(!m->array){
+    printf("Rellocation failed at %lu bytes!\n", sizeof(float*) * x);
+    exit(EXIT_FAILURE);
+  }
   for(int i = 0; i < x; i++){
     m->array[i] = (float*)realloc(m->array[i], y*sizeof(float));
+    if(!m->array[i]){
+      printf("Reallocation failed at %lu bytes!\n", sizeof(float)*y*i);
+      exit(EXIT_FAILURE);
+    }
   } 
   m->row = x;
   m->col = y;
@@ -76,12 +87,11 @@ Matrix subtract(Matrix *m1, Matrix *m2){
 
 Matrix multiply(Matrix *m1, Matrix *m2){
   if(m1->col != m2->row) return *m1;
-  register int i,j,k;
   Matrix returnMatrix = ma_alloc(&returnMatrix,m1->row,m2->col);
 
-  for(i = 0; i < m1->row; ++i){
-    for(j = 0; j < m2->col; ++j){
-      for(k = 0; k < m1->row; ++k){
+  for(int i = 0; i < m1->row; ++i){
+    for(int j = 0; j < m2->col; ++j){
+      for(int k = 0; k < m1->row; ++k){
 
         returnMatrix.array[j][k] += 
           m1->array[j][i] * m2->array[i][k];
@@ -148,32 +158,19 @@ Matrix ones(size_t m, size_t n){
 }
 
 Matrix cat(Matrix m, Matrix n, int order){
-  Matrix catted;
   switch(order){
     case 0:
       if(m.row != n.row) break;
-      catted = ma_alloc(&catted, m.row, (m.col + n.col));
-      for(int i = 0; i < catted.row; i++){
-        for(int j = 0; j < catted.col; j++){
-          int coltemp = j - m.col;
-          if(coltemp < 0){
-            catted.array[i][j] = m.array[i][j];
-          }
-          else{
-            catted.array[i][j] = n.array[i][coltemp];
-          }
-          // Debug print
-          printf("%d\t%d\t%.2f\t%.2f\n", j, coltemp, n.array[i][coltemp], catted.array[i][j]);
+      printf("%p ",&m);
+      m = ma_realloc(&m, m.row, (m.col + n.col));
+      printf("%p\n", &m);
+      for(int i = 0; i < m.row; i++){
+        for(int j = (m.col-n.col); j < m.col; j++){
+          int coltemp = j - n.col;
+          m.array[i][j] = n.array[i][coltemp];
         }
       }
-      /* catted = ma_realloc(&m, m.row, (m.col + n.col)); */
-      /* for(int i = 0; i < catted.row; i++){ */
-      /*   for(int j = n.col; j < catted.col; j++){ */
-      /*     int coltemp = j - n.col; */
-      /*     catted.array[i][j] = n.array[i][coltemp]; */
-      /*   } */
-      /* } */
-      return catted;
+      break;
     case 1:
       if(m.col != n.col) break;
       ma_realloc(&m, (m.row + n.row), m.col);
