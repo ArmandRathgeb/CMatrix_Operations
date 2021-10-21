@@ -63,43 +63,43 @@ Matrix add(Matrix *m1, Matrix *m2){
   if((m1->row != m2->row) || (m1->col != m2->col)){
     return *m1;
   }
-  Matrix returnMatrix = ma_alloc(&returnMatrix,m1->col,m1->row);
+  Matrix ret = ma_alloc(&ret,m1->col,m1->row);
   for(int i = 0; i < m1->row; i++){
     for(int j = 0; j < m1->col; j++){
-      returnMatrix.array[i][j] = 
+      ret.array[i][j] = 
         m1->array[i][j] + m2->array[i][j];
     }
   }
-  return returnMatrix;
+  return ret;
 } 
 
 Matrix subtract(Matrix *m1, Matrix *m2){
   if( (m1->row != m2->row) || (m1->col != m2->row)){
     return *m1;
   }
-  Matrix returnMatrix = ma_alloc(&returnMatrix,m1->row, m1->col);
+  Matrix ret = ma_alloc(&ret,m1->row, m1->col);
   for(int i = 0; i < m2->row; i++)
     for(int j = 0; j < m2->col; j++)
-      returnMatrix.array[i][j] = 
+      ret.array[i][j] = 
         m1->array[i][j] - m2->array[i][j];
-  return returnMatrix;
+  return ret;
 }
 
 Matrix multiply(Matrix *m1, Matrix *m2){
   if(m1->col != m2->row) return *m1;
-  Matrix returnMatrix = ma_alloc(&returnMatrix,m1->row,m2->col);
+  Matrix ret = ma_alloc(&ret,m1->row,m2->col);
 
   for(int i = 0; i < m1->row; ++i){
     for(int j = 0; j < m2->col; ++j){
       for(int k = 0; k < m1->row; ++k){
 
-        returnMatrix.array[j][k] += 
+        ret.array[j][k] += 
           m1->array[j][i] * m2->array[i][k];
 
       }
     }
   }
-  return returnMatrix;
+  return ret;
 
 }
 
@@ -108,7 +108,7 @@ Matrix divide(Matrix *m1, Matrix m2){
     printf("Divisor must be a square matrix!\n");
     return *m1;
   }
-  m2 = cat(m2, identityMatrix(m2.row),0);
+  //m2 = cat(m2, identityMatrix(m2.row),0);
   /* float factor = 1/det(&m2); */
   /* for(int i = 0; i < m2.row; i++){ */
   /*   for(int j = 0; j < m2.col; j++){ */
@@ -142,10 +142,10 @@ void printMatrix(Matrix *m){
 }
 
 Matrix identityMatrix(size_t size){
-  Matrix returnMatrix = ma_alloc(&returnMatrix,size,size);
+  Matrix ret = ma_alloc(&ret,size,size);
   for(int i = 0; i < size; i++)
-    returnMatrix.array[i][i] = 1;
-  return returnMatrix;
+    ret.array[i][i] = 1;
+  return ret;
 }
 
 Matrix ones(size_t m, size_t n){
@@ -157,27 +157,36 @@ Matrix ones(size_t m, size_t n){
   return one;
 }
 
-Matrix cat(Matrix m, Matrix n, int order){
+Matrix cat(Matrix *m, Matrix *n, int order){
   switch(order){
     case 0:
-      if(m.row != n.row) break;
-      printf("%p ",&m);
-      m = ma_realloc(&m, m.row, (m.col + n.col));
-      printf("%p\n", &m);
-      for(int i = 0; i < m.row; i++){
-        for(int j = (m.col-n.col); j < m.col; j++){
-          int coltemp = j - n.col;
-          m.array[i][j] = n.array[i][coltemp];
+      // Rows must be the same height
+      if(m->row != n->row) break;
+
+      Matrix ret = ma_alloc(&ret,m->row,m->col+n->col); 
+
+      for(int i = 0; i < m->row; i++){
+        for(int j = (m->col+n->col); j < m->col; j++){
+          int coltemp = j - n->col;
+          if(m->col > j){
+            printf("%f ", m->array[i][j]);
+            ret.array[i][j] = m->array[i][j];
+          }
+          else {
+            printf("%f ", n->array[i][coltemp]);
+            ret.array[i][j] = n->array[i][coltemp];
+          }
         }
+        printf("\n");
       }
+      return ret;
       break;
     case 1:
-      if(m.col != n.col) break;
-      ma_realloc(&m, (m.row + n.row), m.col);
+      if(m->col != n->col) break;
 
       break;
     default:
       printf("Bad order option.\n");
   }
-  return m;
+  return *m;
 }
