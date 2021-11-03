@@ -55,6 +55,6 @@ Matrix ones(size_t, size_t);
  * Set the order to 1 to concatenate along the rows.
  * Set the order to 0 to concatenate along the columns.
  */
-Matrix cat(Matrix*, Matrix*, int);
+Matrix cat(const Matrix*, const Matrix*, int);
 
 #endif

@@ -8,41 +8,47 @@
 #include <stdlib.h>
 
 // Dynamically allocate memory for matrix arrays
-Matrix ma_alloc(Matrix *m, size_t x, size_t y){
-  m->row = x;
-  m->col = y;
-  m->array = (float**)calloc(y, sizeof(float*));
-  if(!m->array){
-    printf("Allocation failed at %lu bytes!\n", sizeof(float*)*y);
+Matrix ma_alloc(Matrix *matrix, size_t m, size_t n){
+  matrix->row = n;
+  matrix->col = m;
+  matrix->array = (float**)calloc(m, sizeof(float*));
+  if(!matrix->array){
+    printf("Allocation failed at %lu bytes!\n", sizeof(float*)*m);
     exit(EXIT_FAILURE);
   }
 
-  for(int i = 0; i < m->col; i++){
-    m->array[i] = (float*)calloc(x, sizeof(float));
-    if(!m->array[i]){
-      printf("Allocation failed at %lu bytes!\n", sizeof(float)*i*x);
+  for(int i = 0; i < m; i++){
+    matrix->array[i] = (float*)calloc(n, sizeof(float));
+    if(!matrix->array[i]){
+      printf("Allocation failed at %lu bytes!\n", sizeof(float)*i*n);
       exit(EXIT_FAILURE);
     }
   }
-  return *m;
+  return *matrix;
 }
 
 /*
  * Dynamic reallocation of memory
  */
-Matrix ma_realloc(Matrix *m, size_t x, size_t y){
-  m->array = (float**)realloc(m->array, x*sizeof(float*));
+Matrix ma_realloc(Matrix *m, size_t y, size_t x){
+  float** temp = m->array;
+  m->array = (float**)realloc(m->array, y*sizeof(float*));
   if(!m->array){
     printf("Rellocation failed at %lu bytes!\n", sizeof(float*) * x);
     exit(EXIT_FAILURE);
   }
-  for(int i = 0; i < x; i++){
-    m->array[i] = (float*)realloc(m->array[i], y*sizeof(float));
+  for(int i = 0; i < y; i++){
+    m->array[i] = (float*)realloc(m->array[i], x*sizeof(float));
     if(!m->array[i]){
       printf("Reallocation failed at %lu bytes!\n", sizeof(float)*y*i);
       exit(EXIT_FAILURE);
     }
   } 
+  /* for(int i = 0; i < y; ++i){ */
+  /*   for(int j = 0; j < x; ++j){ */
+  /*     m->array[i][j] = temp[i][j]; */
+  /*   } */
+  /* } */
   m->row = x;
   m->col = y;
   return *m;
@@ -56,6 +62,7 @@ void ma_free(Matrix *m){
     free(m->array[i]);
   }
   free(m->array);
+  m->array = NULL;
 }
 
 Matrix add(Matrix *m1, Matrix *m2){
@@ -133,8 +140,8 @@ void transpose(Matrix* m){
 }
 
 void printMatrix(Matrix *m){
-  for(int i = 0; i < m->row; i++){
-    for(int j = 0; j < m->col; j++){
+  for(int i = 0; i < m->col; i++){
+    for(int j = 0; j < m->row; j++){
       printf("%f ", m->array[i][j]);
     }
     printf("\n");
@@ -157,7 +164,7 @@ Matrix ones(size_t m, size_t n){
   return one;
 }
 
-Matrix cat(Matrix *m, Matrix *n, int order){
+Matrix cat(const Matrix *m, const Matrix *n, int order){
   switch(order){
     case 0:
       // Rows must be the same height
@@ -168,6 +175,7 @@ Matrix cat(Matrix *m, Matrix *n, int order){
       for(int i = 0; i < m->row; i++){
         for(int j = (m->col+n->col); j < m->col; j++){
           int coltemp = j - n->col;
+          printf("::%d\n",coltemp);
           if(m->col > j){
             printf("%f ", m->array[i][j]);
             ret.array[i][j] = m->array[i][j];
