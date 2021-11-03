@@ -5,53 +5,47 @@
  */
 
 #include "matrix_operators.h"
-#include <stdlib.h>
 
 // Dynamically allocate memory for matrix arrays
-Matrix ma_alloc(Matrix *matrix, size_t m, size_t n){
+int ma_alloc(Matrix *matrix, size_t m, size_t n){
   matrix->row = n;
   matrix->col = m;
   matrix->array = (float**)calloc(m, sizeof(float*));
   if(!matrix->array){
     printf("Allocation failed at %lu bytes!\n", sizeof(float*)*m);
-    exit(EXIT_FAILURE);
+    return FAIL;
   }
 
   for(int i = 0; i < m; i++){
     matrix->array[i] = (float*)calloc(n, sizeof(float));
     if(!matrix->array[i]){
       printf("Allocation failed at %lu bytes!\n", sizeof(float)*i*n);
-      exit(EXIT_FAILURE);
+      return FAIL;
     }
   }
-  return *matrix;
+  return SUCCESS;
 }
 
 /*
  * Dynamic reallocation of memory
  */
-Matrix ma_realloc(Matrix *m, size_t y, size_t x){
-  float** temp = m->array;
-  m->array = (float**)realloc(m->array, y*sizeof(float*));
-  if(!m->array){
-    printf("Rellocation failed at %lu bytes!\n", sizeof(float*) * x);
-    exit(EXIT_FAILURE);
+int ma_realloc(Matrix *matrix, size_t m, size_t n){
+  matrix->array = (float**)realloc(matrix->array, m*sizeof(float*));
+  if(!matrix->array){
+    printf("Rellocation failed at %lu bytes!\n", sizeof(float*) * n);
+    return FAIL;
   }
-  for(int i = 0; i < y; i++){
-    m->array[i] = (float*)realloc(m->array[i], x*sizeof(float));
-    if(!m->array[i]){
-      printf("Reallocation failed at %lu bytes!\n", sizeof(float)*y*i);
-      exit(EXIT_FAILURE);
+
+  for(int i = 0; i < m; i++){
+    matrix->array[i] = (float*)realloc(matrix->array[i], m*sizeof(float));
+    if(!matrix->array[i]){
+      printf("Reallocation failed at %lu bytes!\n", sizeof(float)*m*i);
+      return FAIL;
     }
   } 
-  /* for(int i = 0; i < y; ++i){ */
-  /*   for(int j = 0; j < x; ++j){ */
-  /*     m->array[i][j] = temp[i][j]; */
-  /*   } */
-  /* } */
-  m->row = x;
-  m->col = y;
-  return *m;
+  matrix->row = n;
+  matrix->col = m;
+  return SUCCESS;
 }
 
 /*
@@ -70,7 +64,8 @@ Matrix add(Matrix *m1, Matrix *m2){
   if((m1->row != m2->row) || (m1->col != m2->col)){
     return *m1;
   }
-  Matrix ret = ma_alloc(&ret,m1->col,m1->row);
+  Matrix ret;
+  ma_alloc(&ret,m1->col,m1->row);
   for(int i = 0; i < m1->row; i++){
     for(int j = 0; j < m1->col; j++){
       ret.array[i][j] = 
@@ -84,7 +79,8 @@ Matrix subtract(Matrix *m1, Matrix *m2){
   if( (m1->row != m2->row) || (m1->col != m2->row)){
     return *m1;
   }
-  Matrix ret = ma_alloc(&ret,m1->row, m1->col);
+  Matrix ret;
+  ma_alloc(&ret,m1->row, m1->col);
   for(int i = 0; i < m2->row; i++)
     for(int j = 0; j < m2->col; j++)
       ret.array[i][j] = 
@@ -94,7 +90,8 @@ Matrix subtract(Matrix *m1, Matrix *m2){
 
 Matrix multiply(Matrix *m1, Matrix *m2){
   if(m1->col != m2->row) return *m1;
-  Matrix ret = ma_alloc(&ret,m1->row,m2->col);
+  Matrix ret;
+  ma_alloc(&ret,m1->row,m2->col);
 
   for(int i = 0; i < m1->row; ++i){
     for(int j = 0; j < m2->col; ++j){
@@ -131,10 +128,10 @@ Matrix divide(Matrix *m1, Matrix m2){
 
 void transpose(Matrix* m){
   Matrix temp = *m;
-  *m = ma_realloc(m, m->col, m->row);
+  ma_realloc(m, m->col, m->row);
   for(int i = 0; i < m->row; i++){
     for(int j = 0; j < m->col; j++){
-    m->array[i][j] = temp.array[j][i];    
+      m->array[i][j] = temp.array[j][i];    
     }
   }
 }
@@ -149,14 +146,16 @@ void printMatrix(Matrix *m){
 }
 
 Matrix identityMatrix(size_t size){
-  Matrix ret = ma_alloc(&ret,size,size);
+  Matrix ret;
+  ma_alloc(&ret,size,size);
   for(int i = 0; i < size; i++)
     ret.array[i][i] = 1;
   return ret;
 }
 
 Matrix ones(size_t m, size_t n){
-  Matrix one = ma_alloc(&one, m, n);
+  Matrix one;
+  ma_alloc(&one, m, n);
   for(int i = 0; i < m; i++){
     for(int j = 0; j < n; j++)
       one.array[i][j] = 1;
@@ -170,7 +169,8 @@ Matrix cat(const Matrix *m, const Matrix *n, int order){
       // Rows must be the same height
       if(m->row != n->row) break;
 
-      Matrix ret = ma_alloc(&ret,m->row,m->col+n->col); 
+      Matrix ret;
+      ma_alloc(&ret,m->row,m->col+n->col); 
 
       for(int i = 0; i < m->row; i++){
         for(int j = (m->col+n->col); j < m->col; j++){

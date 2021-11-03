@@ -9,6 +9,9 @@
 #include <stdlib.h> // For size_t and malloc
 #include <stdio.h> // For printf
 
+#define FAIL -1
+#define SUCCESS 0
+
 typedef struct Matrices {
   size_t row;
   size_t col;
@@ -19,10 +22,11 @@ typedef struct Matrices {
  * Returns array as a NULL if not enough
  * memory. Returns all memory zeroed out.
  */
-Matrix ma_alloc(Matrix*, size_t, size_t);
+int ma_alloc(Matrix*, size_t, size_t);
 
 //Dynamic reallocation of memory
-Matrix ma_realloc(Matrix*, size_t, size_t);
+// Parameters: Matrix, m*n matrix
+int ma_realloc(Matrix*, size_t, size_t);
 
 // Freeing of dynamically allocated memory
 void ma_free(Matrix*);
