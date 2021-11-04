@@ -164,12 +164,12 @@ Matrix ones(size_t m, size_t n){
 }
 
 Matrix cat(const Matrix *m, const Matrix *n, int order){
+  Matrix ret;
   switch(order){
     case 0:
       // Rows must be the same height
       if(m->row != n->row) break;
 
-      Matrix ret;
       ma_alloc(&ret,m->row,m->col+n->col); 
 
       for(int i = 0; i < ret.row; i++){
@@ -188,7 +188,21 @@ Matrix cat(const Matrix *m, const Matrix *n, int order){
       break;
     case 1:
       if(m->col != n->col) break;
+      ma_alloc(&ret, m->row+n->row,m->col);
 
+      for(int i = 0; i < ret.row; ++i){
+        for(int j = 0; j < ret.col; ++j){
+          int rowtemp = i - n->row;
+          if(rowtemp < 0){
+            ret.array[i][j] = m->array[i][j];
+          }
+          else {
+            ret.array[i][j] = n->array[rowtemp][j];
+          }
+        }
+      }
+
+      return ret;
       break;
     default:
       printf("Bad order option.\n");
