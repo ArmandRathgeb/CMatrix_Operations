@@ -8,8 +8,8 @@
 
 // Dynamically allocate memory for matrix arrays
 int ma_alloc(Matrix *matrix, size_t m, size_t n){
-  matrix->row = n;
-  matrix->col = m;
+  matrix->row = m;
+  matrix->col = n;
   matrix->array = (float**)calloc(m, sizeof(float*));
   if(!matrix->array){
     printf("Allocation failed at %lu bytes!\n", sizeof(float*)*m);
@@ -30,9 +30,11 @@ int ma_alloc(Matrix *matrix, size_t m, size_t n){
  * Dynamic reallocation of memory
  */
 int ma_realloc(Matrix *matrix, size_t m, size_t n){
+  matrix->row = m;
+  matrix->col = n;
   matrix->array = (float**)realloc(matrix->array, m*sizeof(float*));
   if(!matrix->array){
-    printf("Rellocation failed at %lu bytes!\n", sizeof(float*) * n);
+    printf("Rellocation failed at %lu bytes!\n", sizeof(float*) * m);
     return FAIL;
   }
 
@@ -43,8 +45,6 @@ int ma_realloc(Matrix *matrix, size_t m, size_t n){
       return FAIL;
     }
   } 
-  matrix->row = n;
-  matrix->col = m;
   return SUCCESS;
 }
 
@@ -52,7 +52,7 @@ int ma_realloc(Matrix *matrix, size_t m, size_t n){
  * Always free dynamically allocated memory
  */
 void ma_free(Matrix *m){
-  for(int i = 0; i < m->col; i++){
+  for(int i = 0; i < m->row; i++){
     free(m->array[i]);
   }
   free(m->array);
@@ -137,8 +137,8 @@ void transpose(Matrix* m){
 }
 
 void printMatrix(Matrix *m){
-  for(int i = 0; i < m->col; i++){
-    for(int j = 0; j < m->row; j++){
+  for(int i = 0; i < m->row; i++){
+    for(int j = 0; j < m->col; j++){
       printf("%f ", m->array[i][j]);
     }
     printf("\n");
@@ -172,16 +172,13 @@ Matrix cat(const Matrix *m, const Matrix *n, int order){
       Matrix ret;
       ma_alloc(&ret,m->row,m->col+n->col); 
 
-      for(int i = 0; i < m->row; i++){
-        for(int j = (m->col+n->col); j < m->col; j++){
+      for(int i = 0; i < ret.row; i++){
+        for(int j = 0; j < ret.col; j++){
           int coltemp = j - n->col;
-          printf("::%d\n",coltemp);
-          if(m->col > j){
-            printf("%f ", m->array[i][j]);
+          if(coltemp < 0){
             ret.array[i][j] = m->array[i][j];
           }
           else {
-            printf("%f ", n->array[i][coltemp]);
             ret.array[i][j] = n->array[i][coltemp];
           }
         }
