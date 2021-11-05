@@ -107,12 +107,12 @@ Matrix multiply(Matrix *m1, Matrix *m2){
 
 }
 
-Matrix divide(Matrix *m1, Matrix m2){
-  if(m2.row != m2.col){
+Matrix divide(Matrix *m1, Matrix *m2){
+  if(m2->row != m2->col){
     printf("Divisor must be a square matrix!\n");
     return *m1;
   }
-  //m2 = cat(m2, identityMatrix(m2.row),0);
+  Matrix ret = cat(m2, identityMatrix(m2->row),0);
   /* float factor = 1/det(&m2); */
   /* for(int i = 0; i < m2.row; i++){ */
   /*   for(int j = 0; j < m2.col; j++){ */
@@ -208,4 +208,23 @@ Matrix cat(const Matrix *m, const Matrix *n, int order){
       printf("Bad order option.\n");
   }
   return *m;
+}
+
+Matrix getCofactor(Matrix* m){
+  Matrix cofactor;
+
+}
+
+float det(Matrix* m){
+  float determinant = 0;
+  size_t marker = 0;
+  int sign = 1;
+  Matrix cofmat;
+
+  for(size_t i = 0; i < m->col; ++i){
+    getCofactor(&cofmat);
+    determinant += sign*m[0][i] * determinant(&cofmat) 
+
+    sign = -sign;
+  }
 }

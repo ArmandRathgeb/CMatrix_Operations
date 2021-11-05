@@ -61,4 +61,8 @@ Matrix ones(size_t, size_t);
  */
 Matrix cat(const Matrix*, const Matrix*, int);
 
+Matrix getCofactor(Matrix*);
+
+float det(Matrix*);
+
 #endif
