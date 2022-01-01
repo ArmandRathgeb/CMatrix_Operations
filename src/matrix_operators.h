@@ -42,7 +42,7 @@ Matrix multiply(Matrix*, Matrix*);
  * Second passed by value to prevent it from
  * being altered.
  */
-Matrix divide(Matrix*, Matrix);
+Matrix divide(Matrix*, Matrix*);
 
 void transpose(Matrix*);
 
