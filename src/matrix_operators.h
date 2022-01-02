@@ -6,8 +6,7 @@
 
 #ifndef _MATRIX_OPERATORS_H_
 #define _MATRIX_OPERATORS_H_
-#include <stdlib.h> // For size_t and malloc
-#include <stdio.h> // For printf
+#include <stdlib.h>
 
 #define FAIL -1
 #define SUCCESS 0
@@ -61,7 +60,7 @@ Matrix ones(size_t, size_t);
  */
 Matrix cat(const Matrix*, const Matrix*, int);
 
-Matrix getCofactor(Matrix*);
+Matrix getCofactor(Matrix*, size_t, size_t);
 
 float det(Matrix*);
 

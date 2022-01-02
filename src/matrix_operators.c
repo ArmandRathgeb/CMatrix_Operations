@@ -5,6 +5,8 @@
  */
 
 #include "matrix_operators.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 // Dynamically allocate memory for matrix arrays
 int ma_alloc(Matrix *matrix, size_t m, size_t n){
@@ -54,6 +56,7 @@ int ma_realloc(Matrix *matrix, size_t m, size_t n){
 void ma_free(Matrix *m){
     for(int i = 0; i < m->row; i++){
         free(m->array[i]);
+        m->array[i] = NULL;
     }
     free(m->array);
     m->array = NULL;
@@ -122,7 +125,7 @@ Matrix divide(Matrix *m1, Matrix *m2){
 
 
 
-    return multiply(m1,&m2);
+    return multiply(m1,m2);
 }
 
 void transpose(Matrix* m){
@@ -183,8 +186,8 @@ Matrix cat(const Matrix *m, const Matrix *n, int order){
             printf("\n");
         }
         return ret;
-        break;
     case 1:
+        // Columns must be the same height
         if(m->col != n->col) break;
         ma_alloc(&ret, m->row+n->row,m->col);
 
@@ -200,28 +203,46 @@ Matrix cat(const Matrix *m, const Matrix *n, int order){
         }
 
         return ret;
-        break;
     default:
         printf("Bad order option.\n");
     }
     return *m;
 }
 
-Matrix getCofactor(Matrix* m){
-    Matrix cofactor;
-
+Matrix getCofactor(Matrix* m, size_t rowPos, size_t colPos){
+    if(m->row > 2 && m->col > 2) {
+        Matrix cofactor;
+        ma_alloc(&cofactor, m->row-1, m->col-1);
+        for(int i = 0, mi = 0; mi < m->row; ++mi) {
+            for(int j = 0, mj = 0; mj < m->col; ++mj) {
+                if(mj != colPos) {
+                    cofactor.array[i][j] = m->array[mi][mj];
+                    j++;
+                }
+            }
+            if(mi != rowPos) {
+                i++;
+            }
+        }
+        return cofactor;
+    } else {
+        return *m;
+    }
 }
 
 float det(Matrix* m){
-    float determinant = 0;
-    size_t marker = 0;
-    int sign = 1;
-    Matrix cofmat;
+    if(m->row > 2 && m->col > 2) {
+        float determinant = 0;
+        int sign = 1;
+        Matrix cofmat;
 
-    for(size_t i = 0; i < m->col; ++i){
-        getCofactor(&cofmat);
-        //determinant += sign*m[0][i] * determinant(&cofmat) 
-
-        sign = -sign;
+        for(size_t i = 0; i < m->col; ++i){
+            cofmat = getCofactor(m, 0, i);
+            determinant += sign*m->array[0][i] * det(&cofmat);
+            sign = -sign;
+        }
+        return determinant;
+    } else {
+        return m->array[0][0] * m->array[1][1] - m->array[0][1] * m->array[1][0];
     }
 }

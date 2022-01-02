@@ -1,4 +1,5 @@
 #include "matrix_operators.h"
+#include <stdio.h>
 
 int main(){
     Matrix k,k1; 
@@ -19,10 +20,17 @@ int main(){
     printf("\n");
     ma_realloc(&k6,6,5);
     printMatrix(&k6);
-    k6 = cat(&k,&k1,1);
     printf("\n");
+    k6 = cat(&k,&k1,1);
     printMatrix(&k6);
+    printf("\n");
+    Matrix k3 = getCofactor(&k6, 0, 0);
+    printMatrix(&k3);
+    printf("\n");
+    ma_realloc(&k3, 3, 3);
+    printf("%f\n", det(&k3));
     ma_free(&k);
     ma_free(&k1);
+    ma_free(&k3);
     ma_free(&k6);
 }
