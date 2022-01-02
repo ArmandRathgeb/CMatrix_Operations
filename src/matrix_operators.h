@@ -8,6 +8,9 @@
 #define _MATRIX_OPERATORS_H_
 #include <stdlib.h>
 
+// Always make sure to check errno values 
+// when they get returned
+
 #define FAIL -1
 #define SUCCESS 0
 

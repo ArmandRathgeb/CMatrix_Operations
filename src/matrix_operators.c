@@ -7,6 +7,9 @@
 #include "matrix_operators.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
+
+extern int errno;
 
 // Dynamically allocate memory for matrix arrays
 int ma_alloc(Matrix *matrix, size_t m, size_t n){
@@ -14,15 +17,17 @@ int ma_alloc(Matrix *matrix, size_t m, size_t n){
     matrix->col = n;
     matrix->array = (float**)calloc(m, sizeof(float*));
     if(!matrix->array){
-        printf("Allocation failed at %lu bytes!\n", sizeof(float*)*m);
+        errno = 12;
+        perror("Allocation failed!");
         return FAIL;
     }
 
     for(int i = 0; i < m; i++){
         matrix->array[i] = (float*)calloc(n, sizeof(float));
         if(!matrix->array[i]){
-          printf("Allocation failed at %lu bytes!\n", sizeof(float)*i*n);
-          return FAIL;
+            errno = 12;
+            perror("Allocation failed!");
+            return FAIL;
         }
     }
     return SUCCESS;
@@ -36,14 +41,16 @@ int ma_realloc(Matrix *matrix, size_t m, size_t n){
     matrix->col = n;
     matrix->array = (float**)realloc(matrix->array, m*sizeof(float*));
     if(!matrix->array){
-        printf("Rellocation failed at %lu bytes!\n", sizeof(float*) * m);
+        errno = 12;
+        perror("Reallocation failed!");
         return FAIL;
     }
 
     for(int i = 0; i < m; i++){
         matrix->array[i] = (float*)realloc(matrix->array[i], m*sizeof(float));
         if(!matrix->array[i]){
-            printf("Reallocation failed at %lu bytes!\n", sizeof(float)*m*i);
+            errno = 12;
+            perror("Reallocation failed!");
             return FAIL;
         }
     } 
@@ -65,6 +72,8 @@ void ma_free(Matrix *m){
 Matrix add(Matrix *m1, Matrix *m2){
     
     if((m1->row != m2->row) || (m1->col != m2->col)){
+        errno = 1;
+        perror("Matrices must be the same size");
         return *m1;
     }
     Matrix ret;
@@ -72,7 +81,7 @@ Matrix add(Matrix *m1, Matrix *m2){
     for(int i = 0; i < m1->row; i++){
         for(int j = 0; j < m1->col; j++){
             ret.array[i][j] = 
-            m1->array[i][j] + m2->array[i][j];
+                m1->array[i][j] + m2->array[i][j];
         }
     }
     return ret;
@@ -80,6 +89,8 @@ Matrix add(Matrix *m1, Matrix *m2){
 
 Matrix subtract(Matrix *m1, Matrix *m2){
     if( (m1->row != m2->row) || (m1->col != m2->row)){
+        errno = 1;
+        perror("Matrices must be the same size");
         return *m1;
     }
     Matrix ret;
@@ -92,17 +103,19 @@ Matrix subtract(Matrix *m1, Matrix *m2){
 }
 
 Matrix multiply(Matrix *m1, Matrix *m2){
-    if(m1->col != m2->row) return *m1;
+    if(m1->col != m2->row) {
+        errno = 1;
+        perror("Column of matrix 1 must be equal to column of matrix 2");
+        return *m1;
+    }
     Matrix ret;
     ma_alloc(&ret,m1->row,m2->col);
 
     for(int i = 0; i < m1->row; ++i){
         for(int j = 0; j < m2->col; ++j){
             for(int k = 0; k < m1->row; ++k){
-
                 ret.array[j][k] += 
                     m1->array[j][i] * m2->array[i][k];
-
             }
         }
     }
@@ -170,7 +183,11 @@ Matrix cat(const Matrix *m, const Matrix *n, int order){
     switch(order){
     case 0:
         // Rows must be the same height
-        if(m->row != n->row) break;
+        if(m->row != n->row) {
+            errno = 1;
+            perror("Rows must be the same size");
+            break;
+        }
 
         ma_alloc(&ret,m->row,m->col+n->col); 
 
@@ -188,7 +205,11 @@ Matrix cat(const Matrix *m, const Matrix *n, int order){
         return ret;
     case 1:
         // Columns must be the same height
-        if(m->col != n->col) break;
+        if(m->col != n->col) {
+            errno = 1;
+            perror("Columns must be the same size");
+            break;
+        }
         ma_alloc(&ret, m->row+n->row,m->col);
 
         for(int i = 0; i < ret.row; ++i){
@@ -204,7 +225,8 @@ Matrix cat(const Matrix *m, const Matrix *n, int order){
 
         return ret;
     default:
-        printf("Bad order option.\n");
+        errno = 8;
+        perror("Bad order option");
     }
     return *m;
 }
@@ -216,6 +238,8 @@ Matrix getCofactor(Matrix* m, size_t rowPos, size_t colPos){
         for(int i = 0, mi = 0; mi < m->row; ++mi) {
             for(int j = 0, mj = 0; mj < m->col; ++mj) {
                 if(mj != colPos) {
+                    // Set cofactor array at position i,j to value at
+                    // array mi,mj
                     cofactor.array[i][j] = m->array[mi][mj];
                     j++;
                 }
@@ -226,23 +250,32 @@ Matrix getCofactor(Matrix* m, size_t rowPos, size_t colPos){
         }
         return cofactor;
     } else {
+        // Determinant of a 2x2 matrix is still a 2x2 matrix
         return *m;
     }
 }
 
 float det(Matrix* m){
-    if(m->row > 2 && m->col > 2) {
-        float determinant = 0;
-        int sign = 1;
-        Matrix cofmat;
+    if(m->row == m->col) {
+        if(m->row > 2 && m->col > 2) {
+            float determinant = 0;
+            int sign = 1;
+            Matrix cofmat;
 
-        for(size_t i = 0; i < m->col; ++i){
-            cofmat = getCofactor(m, 0, i);
-            determinant += sign*m->array[0][i] * det(&cofmat);
-            sign = -sign;
+            for(size_t i = 0; i < m->col; ++i){
+                cofmat = getCofactor(m, 0, i);
+                determinant += sign*m->array[0][i] * det(&cofmat);
+                sign = -sign;
+            }
+            return determinant;
+        } else if(m->row != 1 && m->col != 1){
+            return m->array[0][0] * m->array[1][1] - m->array[0][1] * m->array[1][0];
+        } else{
+            return m->array[0][0];
         }
-        return determinant;
     } else {
-        return m->array[0][0] * m->array[1][1] - m->array[0][1] * m->array[1][0];
+        errno = 1;
+        perror("Matrix must be square");
+        return FAIL;
     }
 }
