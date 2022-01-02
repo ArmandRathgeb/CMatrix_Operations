@@ -1,7 +1,7 @@
 /*
  * Implementation for matrix_operators.h
  * Author: Armand Rathgeb
- * Last modified: 9/05/2021
+ * Last modified: 1/1/2022 
  */
 
 #include "matrix_operators.h"
@@ -12,56 +12,58 @@
 extern int errno;
 
 // Dynamically allocate memory for matrix arrays
-int ma_alloc(Matrix *matrix, size_t m, size_t n){
+int ma_alloc(Matrix *matrix, size_t m, size_t n) {
     matrix->row = m;
     matrix->col = n;
     matrix->array = (float**)calloc(m, sizeof(float*));
-    if(!matrix->array){
+    if(!matrix->array) {
         errno = 12;
         perror("Allocation failed!");
         return FAIL;
     }
 
-    for(int i = 0; i < m; i++){
+    for(int i = 0; i < m; i++) {
         matrix->array[i] = (float*)calloc(n, sizeof(float));
-        if(!matrix->array[i]){
+        if(!matrix->array[i]) {
             errno = 12;
             perror("Allocation failed!");
             return FAIL;
         }
     }
+    errno = 0;
     return SUCCESS;
 }
 
 /*
  * Dynamic reallocation of memory
  */
-int ma_realloc(Matrix *matrix, size_t m, size_t n){
+int ma_realloc(Matrix *matrix, size_t m, size_t n) {
     matrix->row = m;
     matrix->col = n;
     matrix->array = (float**)realloc(matrix->array, m*sizeof(float*));
-    if(!matrix->array){
+    if(!matrix->array) {
         errno = 12;
         perror("Reallocation failed!");
         return FAIL;
     }
 
-    for(int i = 0; i < m; i++){
+    for(int i = 0; i < m; i++) {
         matrix->array[i] = (float*)realloc(matrix->array[i], m*sizeof(float));
-        if(!matrix->array[i]){
+        if(!matrix->array[i]) {
             errno = 12;
             perror("Reallocation failed!");
             return FAIL;
         }
     } 
+    errno = 0;
     return SUCCESS;
 }
 
 /*
  * Always free dynamically allocated memory
  */
-void ma_free(Matrix *m){
-    for(int i = 0; i < m->row; i++){
+void ma_free(Matrix *m) {
+    for(int i = 0; i < m->row; i++) {
         free(m->array[i]);
         m->array[i] = NULL;
     }
@@ -69,26 +71,26 @@ void ma_free(Matrix *m){
     m->array = NULL;
 }
 
-Matrix add(Matrix *m1, Matrix *m2){
-    
-    if((m1->row != m2->row) || (m1->col != m2->col)){
+Matrix add(Matrix *m1, Matrix *m2) {
+    if((m1->row != m2->row) || (m1->col != m2->col)) {
         errno = 1;
         perror("Matrices must be the same size");
         return *m1;
     }
     Matrix ret;
     ma_alloc(&ret,m1->col,m1->row);
-    for(int i = 0; i < m1->row; i++){
-        for(int j = 0; j < m1->col; j++){
+    for(int i = 0; i < m1->row; i++) {
+        for(int j = 0; j < m1->col; j++) {
             ret.array[i][j] = 
                 m1->array[i][j] + m2->array[i][j];
         }
     }
+    errno = 0;
     return ret;
 } 
 
-Matrix subtract(Matrix *m1, Matrix *m2){
-    if( (m1->row != m2->row) || (m1->col != m2->row)){
+Matrix subtract(Matrix *m1, Matrix *m2) {
+    if((m1->row != m2->row) || (m1->col != m2->row)) {
         errno = 1;
         perror("Matrices must be the same size");
         return *m1;
@@ -99,10 +101,11 @@ Matrix subtract(Matrix *m1, Matrix *m2){
         for(int j = 0; j < m2->col; j++)
             ret.array[i][j] = 
                 m1->array[i][j] - m2->array[i][j];
+    errno = 0;
     return ret;
 }
 
-Matrix multiply(Matrix *m1, Matrix *m2){
+Matrix multiply(Matrix *m1, Matrix *m2) {
     if(m1->col != m2->row) {
         errno = 1;
         perror("Column of matrix 1 must be equal to column of matrix 2");
@@ -111,56 +114,57 @@ Matrix multiply(Matrix *m1, Matrix *m2){
     Matrix ret;
     ma_alloc(&ret,m1->row,m2->col);
 
-    for(int i = 0; i < m1->row; ++i){
-        for(int j = 0; j < m2->col; ++j){
-            for(int k = 0; k < m1->row; ++k){
+    for(int i = 0; i < m1->row; ++i) {
+        for(int j = 0; j < m2->col; ++j) {
+            for(int k = 0; k < m1->row; ++k) {
                 ret.array[j][k] += 
                     m1->array[j][i] * m2->array[i][k];
             }
         }
     }
+    errno = 0;
     return ret;
 }
 
-Matrix divide(Matrix *m1, Matrix *m2){
-    if(m2->row != m2->col){
-        printf("Divisor must be a square matrix!\n");
+Matrix divide(Matrix *m1, Matrix *m2) {
+    if(m2->row != m2->col) {
+        errno = 1;
+        perror("Matrix must be square");
         return *m1;
     }
-    //Matrix ret = cat(m2, identityMatrix(m2->row),0);
-    /* float factor = 1/det(&m2); */
-    /* for(int i = 0; i < m2.row; i++){ */
-    /*   for(int j = 0; j < m2.col; j++){ */
-    /*     if( (j+1+i) % 2 == 0) */
-    /*       m2.array[i][j] *= -1; */
-    /*   } */
-    /* } */
-
-
-
+    Matrix ident = identityMatrix(m2->row);
+    Matrix ret = cat(m2, &ident,0);
+    float factor = 1/det(m2); 
+    for(int i = 0; i < m2->row; i++) { 
+        for(int j = 0; j < m2->col; j++) { 
+            if( (j+1+i) % 2 == 0) 
+                m2->array[i][j] *= -1; 
+        } 
+    } 
+    errno = 0;
     return multiply(m1,m2);
 }
 
-void transpose(Matrix* m){
+void transpose(Matrix* m) {
     Matrix temp = *m;
     ma_realloc(m, m->col, m->row);
-    for(int i = 0; i < m->row; i++){
-        for(int j = 0; j < m->col; j++){
+    for(int i = 0; i < m->row; i++) {
+        for(int j = 0; j < m->col; j++) {
             m->array[i][j] = temp.array[j][i];    
         }
     }
 }
 
-void printMatrix(Matrix *m){
-    for(int i = 0; i < m->row; i++){
-        for(int j = 0; j < m->col; j++){
+void printMatrix(Matrix *m) {
+    for(int i = 0; i < m->row; i++) {
+        for(int j = 0; j < m->col; j++) {
             printf("%f ", m->array[i][j]);
         }
         printf("\n");
     }
 }
 
-Matrix identityMatrix(size_t size){
+Matrix identityMatrix(size_t size) {
     Matrix ret;
     ma_alloc(&ret,size,size);
     for(int i = 0; i < size; i++)
@@ -168,19 +172,20 @@ Matrix identityMatrix(size_t size){
     return ret;
 }
 
-Matrix ones(size_t m, size_t n){
+Matrix ones(size_t m, size_t n) {
     Matrix one;
     ma_alloc(&one, m, n);
-    for(int i = 0; i < m; i++){
+    for(int i = 0; i < m; i++) {
         for(int j = 0; j < n; j++)
             one.array[i][j] = 1;
     }
     return one;
 }
 
-Matrix cat(const Matrix *m, const Matrix *n, int order){
+Matrix cat(const Matrix *m, const Matrix *n, int order) {
     Matrix ret;
-    switch(order){
+    errno = 0;
+    switch(order) {
     case 0:
         // Rows must be the same height
         if(m->row != n->row) {
@@ -191,10 +196,10 @@ Matrix cat(const Matrix *m, const Matrix *n, int order){
 
         ma_alloc(&ret,m->row,m->col+n->col); 
 
-        for(int i = 0; i < ret.row; i++){
-            for(int j = 0; j < ret.col; j++){
+        for(int i = 0; i < ret.row; i++) {
+            for(int j = 0; j < ret.col; j++) {
                 int coltemp = j - n->col;
-                if(coltemp < 0){
+                if(coltemp < 0) {
                     ret.array[i][j] = m->array[i][j];
                 } else {
                     ret.array[i][j] = n->array[i][coltemp];
@@ -212,10 +217,10 @@ Matrix cat(const Matrix *m, const Matrix *n, int order){
         }
         ma_alloc(&ret, m->row+n->row,m->col);
 
-        for(int i = 0; i < ret.row; ++i){
-            for(int j = 0; j < ret.col; ++j){
+        for(int i = 0; i < ret.row; ++i) {
+            for(int j = 0; j < ret.col; ++j) {
                 int rowtemp = i - n->row;
-                if(rowtemp < 0){
+                if(rowtemp < 0) {
                     ret.array[i][j] = m->array[i][j];
                 } else {
                     ret.array[i][j] = n->array[rowtemp][j];
@@ -231,7 +236,7 @@ Matrix cat(const Matrix *m, const Matrix *n, int order){
     return *m;
 }
 
-Matrix getCofactor(Matrix* m, size_t rowPos, size_t colPos){
+Matrix getCofactor(Matrix* m, size_t rowPos, size_t colPos) {
     if(m->row > 2 && m->col > 2) {
         Matrix cofactor;
         ma_alloc(&cofactor, m->row-1, m->col-1);
@@ -255,23 +260,22 @@ Matrix getCofactor(Matrix* m, size_t rowPos, size_t colPos){
     }
 }
 
-float det(Matrix* m){
-    if(m->row == m->col) {
+float det(Matrix* m) {
+    errno = 0;
+    if((m->row == m->col) && (m->row > 1 && m->col > 1)) {
         if(m->row > 2 && m->col > 2) {
             float determinant = 0;
             int sign = 1;
             Matrix cofmat;
 
-            for(size_t i = 0; i < m->col; ++i){
+            for(size_t i = 0; i < m->col; ++i) {
                 cofmat = getCofactor(m, 0, i);
                 determinant += sign*m->array[0][i] * det(&cofmat);
                 sign = -sign;
             }
             return determinant;
-        } else if(m->row != 1 && m->col != 1){
+        } else {
             return m->array[0][0] * m->array[1][1] - m->array[0][1] * m->array[1][0];
-        } else{
-            return m->array[0][0];
         }
     } else {
         errno = 1;
