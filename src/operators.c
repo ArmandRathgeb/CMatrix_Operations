@@ -1,12 +1,14 @@
+// Contains implementations of regular mathematical matrix operators
 #include <stdlib.h>
 #include <errno.h>
+#include <stdio.h>
 #include "matrix_operators.h"
 
 extern int errno;
 
 Matrix add(Matrix *m1, Matrix *m2) {
     if((m1->row != m2->row) || (m1->col != m2->col)) {
-        errno = 1;
+        errno = EINVAL;
         perror("Matrices must be the same size");
         return *m1;
     }
@@ -24,7 +26,7 @@ Matrix add(Matrix *m1, Matrix *m2) {
 
 Matrix subtract(Matrix *m1, Matrix *m2) {
     if((m1->row != m2->row) || (m1->col != m2->row)) {
-        errno = 1;
+        errno = EINVAL;
         perror("Matrices must be the same size");
         return *m1;
     }
@@ -40,7 +42,7 @@ Matrix subtract(Matrix *m1, Matrix *m2) {
 
 Matrix multiply(Matrix *m1, Matrix *m2) {
     if(m1->col != m2->row) {
-        errno = 1;
+        errno = EINVAL;
         perror("Column of matrix 1 must be equal to column of matrix 2");
         return *m1;
     }
@@ -61,7 +63,7 @@ Matrix multiply(Matrix *m1, Matrix *m2) {
 
 Matrix divide(Matrix *m1, Matrix *m2) {
     if(m2->row != m2->col) {
-        errno = 1;
+        errno = EINVAL;
         perror("Matrix must be square");
         return *m1;
     }

@@ -11,13 +11,13 @@
 // Always make sure to check errno values 
 // when they get returned
 
-#define FAIL -1
-#define SUCCESS 0
+#define FAIL 0
+#define SUCCESS 1 
 
 typedef struct Matrices {
-  size_t row;
-  size_t col;
-  float **array;
+  size_t row;    // Row size
+  size_t col;    // Column size
+  float **array; // 2-D array pointer
 } Matrix;
 
 // @params Matrix* to allocate, row size, column size

@@ -1,9 +1,8 @@
+// Contains implementations of matrix memory management
 #include <stdlib.h>
 #include <errno.h>
+#include <stdio.h>
 #include "matrix_operators.h"
-/*
- * Contains implementaions for matrix memory management
- */
 
 extern int errno;
 
@@ -13,7 +12,7 @@ int ma_alloc(Matrix *matrix, size_t m, size_t n) {
     matrix->col = n;
     matrix->array = (float**)calloc(m, sizeof(float*));
     if(!matrix->array) {
-        errno = 12;
+        errno = ENOMEM;
         perror("Allocation failed!");
         return FAIL;
     }
@@ -21,7 +20,7 @@ int ma_alloc(Matrix *matrix, size_t m, size_t n) {
     for(int i = 0; i < m; i++) {
         matrix->array[i] = (float*)calloc(n, sizeof(float));
         if(!matrix->array[i]) {
-            errno = 12;
+            errno = ENOMEM;
             perror("Allocation failed!");
             return FAIL;
         }
@@ -38,7 +37,7 @@ int ma_realloc(Matrix *matrix, size_t m, size_t n) {
     matrix->col = n;
     matrix->array = (float**)realloc(matrix->array, m*sizeof(float*));
     if(!matrix->array) {
-        errno = 12;
+        errno = ENOMEM;
         perror("Reallocation failed!");
         return FAIL;
     }
@@ -46,7 +45,7 @@ int ma_realloc(Matrix *matrix, size_t m, size_t n) {
     for(int i = 0; i < m; i++) {
         matrix->array[i] = (float*)realloc(matrix->array[i], m*sizeof(float));
         if(!matrix->array[i]) {
-            errno = 12;
+            errno = ENOMEM;
             perror("Reallocation failed!");
             return FAIL;
         }

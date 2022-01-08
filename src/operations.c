@@ -27,7 +27,7 @@ void printMatrix(Matrix *m) {
 
 Matrix identityMatrix(size_t size) {
     Matrix ret;
-    ma_alloc(&ret,size,size);
+    ma_alloc(&ret, size, size);
     for(int i = 0; i < size; i++)
         ret.array[i][i] = 1;
     return ret;
@@ -50,7 +50,7 @@ Matrix cat(const Matrix *m, const Matrix *n, int order) {
     case 0:
         // Rows must be the same height
         if(m->row != n->row) {
-            errno = 1;
+            errno = EINVAL;
             perror("Rows must be the same size");
             break;
         }
@@ -72,7 +72,7 @@ Matrix cat(const Matrix *m, const Matrix *n, int order) {
     case 1:
         // Columns must be the same height
         if(m->col != n->col) {
-            errno = 1;
+            errno = EINVAL;
             perror("Columns must be the same size");
             break;
         }
@@ -91,7 +91,7 @@ Matrix cat(const Matrix *m, const Matrix *n, int order) {
 
         return ret;
     default:
-        errno = 8;
+        errno = EINVAL;
         perror("Bad order option");
     }
     return *m;
@@ -139,7 +139,7 @@ float det(Matrix* m) {
             return m->array[0][0] * m->array[1][1] - m->array[0][1] * m->array[1][0];
         }
     } else {
-        errno = 1;
+        errno = EINVAL;
         perror("Matrix must be square");
         return FAIL;
     }
