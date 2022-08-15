@@ -6,7 +6,7 @@
 
 extern int errno;
 
-Matrix add(Matrix *m1, Matrix *m2) {
+Matrix add(const Matrix *m1, const Matrix *m2) {
     if((m1->row != m2->row) || (m1->col != m2->col)) {
         errno = EINVAL;
         perror("Matrices must be the same size");
@@ -24,7 +24,7 @@ Matrix add(Matrix *m1, Matrix *m2) {
     return ret;
 } 
 
-Matrix subtract(Matrix *m1, Matrix *m2) {
+Matrix subtract(const Matrix *m1, const Matrix *m2) {
     if((m1->row != m2->row) || (m1->col != m2->row)) {
         errno = EINVAL;
         perror("Matrices must be the same size");
@@ -40,7 +40,7 @@ Matrix subtract(Matrix *m1, Matrix *m2) {
     return ret;
 }
 
-Matrix multiply(Matrix *m1, Matrix *m2) {
+Matrix multiply(const Matrix *m1, const Matrix *m2) {
     if(m1->col != m2->row) {
         errno = EINVAL;
         perror("Column of matrix 1 must be equal to column of matrix 2");
@@ -61,7 +61,7 @@ Matrix multiply(Matrix *m1, Matrix *m2) {
     return ret;
 }
 
-Matrix divide(Matrix *m1, Matrix *m2) {
+Matrix divide(const Matrix *m1, const Matrix *m2) {
     if(m2->row != m2->col) {
         errno = EINVAL;
         perror("Matrix must be square");

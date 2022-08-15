@@ -1,11 +1,11 @@
-/*
- * Header file for matrix operations.
- * Author: Armand Rathgeb
- * Last modified: 1/1/2022 
- */
-
 #ifndef _MATRIX_OPERATORS_H_
 #define _MATRIX_OPERATORS_H_
+/*!
+ * \headerfile <>
+ * \brief Contains all of the functions to deal with Matrices
+ * \author Armand Rathgeb
+ */
+
 #include <stdlib.h>
 
 // Always make sure to check errno values 
@@ -14,94 +14,128 @@
 #define FAIL 0
 #define SUCCESS 1 
 
+/*!
+ * \struct Matrix
+ * \brief Main class for 2D matrix
+ */
 typedef struct Matrices {
-  size_t row;    // Row size
-  size_t col;    // Column size
-  float **array; // 2-D array pointer
+  size_t row;    /**< Row size */
+  size_t col;    /**< Column size */
+  float **array; /**< 2D array of floats */
 } Matrix;
 
-// @params Matrix* to allocate, row size, column size
-// @return FAIL or SUCCESS
-// @description Allocates an m x n chunk of memory to
-// a matrix
-int ma_alloc(Matrix*, size_t, size_t);
+/*!
+ * \brief Allocate matrices
+ * \details Uses malloc() under the hood to allocate a 2D matrix
+ * \param matrix Pointer to matrix to allocate
+ * \param m Row size
+ * \param n Column size
+ * \return FAIL or SUCCESS
+ */
+int ma_alloc(Matrix* matrix, size_t m, size_t n);
 
-// @params Matrix* to reallocate, row size, column size
-// @return FAIL or SUCCESS
-// @description Reallocates a matrix to a new m x n
-// chunk of memory
-int ma_realloc(Matrix*, size_t, size_t);
+/*!
+ * \brief Reallocate and resize a matrix
+ * \details Uses realloc() under the hood to reallocate it.
+ * \param matrix Pointer to matrix to allocate
+ * \param m Row size
+ * \param n Column size
+ * \return FAIL or SUCCESS
+ */
+int ma_realloc(Matrix* matrix, size_t m, size_t n);
 
-// @params Matrix* to delete
-// @return void
-// @description Frees dynamically allocated memory and
-// deletes matrices
-void ma_free(Matrix*);
+/*!
+ * \brief Frees a matrix
+ * \details Uses free() under the hood to deallocate
+ * \param m Matrix to deallocate
+ */
+void ma_free(Matrix* m);
 
-// @params Matrix* A, Matrix* B
-// @return Matrix A + Matrix B
-// @description Adds two matrices of the same size
-Matrix add(Matrix*, Matrix*);
+/*!
+ * \brief Adds two matrices
+ * \param m1 Pointer to first matrix
+ * \param m2 Pointer to second matrix
+ * \return m1 + m2
+ */
+Matrix add(const Matrix* m1, const Matrix* m2);
 
-// @params Matrix* A, Matrix* B
-// @return Matrix A - Matrix B
-// @description Subtracts two matrices of the same size
-Matrix subtract(Matrix*, Matrix*);
+/*!
+ * \brief Subtracts two matrices
+ * \param m1 Pointer to first matrix
+ * \param m2 Pointer to second matrix
+ * \return m1 - m2
+ */
+Matrix subtract(const Matrix* m1, const Matrix* m2);
 
-// @params Matrix* A, Matrix* B
-// @return Matrix A * Matrix B
-// @description Multiplies two matrices. The columns of matrix
-// A must be the same size as the rows of matrix B
-Matrix multiply(Matrix*, Matrix*);
+/*!
+ * \brief Multiplies two matrices
+ * \details Column of m1 must be the same size as the rows of m2
+ * \param m1 Pointer to first matrix
+ * \param m2 Pointer to second matrix
+ * \return m1 * m2
+ */
+Matrix multiply(const Matrix* m1, const Matrix* m2);
 
-// @params Matrix* A, Matrix* B
-// @return Matrix A / Matrix B
-// @description Divides two matrices
-Matrix divide(Matrix*, Matrix*);
+/*!
+ * \brief Divides two matrices
+ * \param m1 Pointer to first matrix
+ * \param m2 Pointer to second matrix
+ * \return m1 / m2
+ */
+Matrix divide(const Matrix* m1, const Matrix* m2);
 
-// @params Matrix* A
-// @return void
-// @description Transposes a matrix. It will
-// alter the matrix that gets sent to it
-void transpose(Matrix*);
+/*!
+ * \brief Transposes a matrix
+ * \details The matrix passed will be transposed. It will be affected
+ * \param m Matrix to transpose
+ */
+void transpose(Matrix* m);
 
-// @params Matrix* A
-// @return void
-// @description Prints a matrix
-void printMatrix(Matrix*);
+/*!
+ * \brief Prints a matrix
+ * \param m Pointer to matrix to print
+ */
+void printMatrix(const Matrix* m);
 
-// @params Square size for the matrix
-// @return Identity matrix
-// @description Creates an m x m identity
-// matrix
-Matrix identityMatrix(size_t);
+/*!
+ * \brief Creates a size*size identity matrix
+ * \param size Size for the sides of square identity matrix
+ * \return Identity matrix
+ */
+Matrix identityMatrix(size_t size);
 
-// @params Row size, Column size
-// @return Matrix of ones
-// @description Creates an m x n matrix full 
-// of ones
-Matrix ones(size_t, size_t);
+/*!
+ * \brief Creates an m*n matrix of ones
+ * \param m Row size
+ * \param n Column size
+ * \return m*n matrix of ones
+ */
+Matrix ones(size_t m, size_t n);
 
- // @params Matrix A, Matrix B, 0 to concatenate along rows
- // 1 to concatenate along columns
- // @return Returns concenated matrix
- // @description Concatenates two matrices along either the 
- // rows or columns. Matrices must be the same size along either
- // their rows or columns.
-Matrix cat(const Matrix*, const Matrix*, int);
+ /*!
+  * \brief Concatenate two matrices
+  * \details Concatenates two matrices. The sides being concatenated must be the same size
+  * \param m Pointer to first matrix
+  * \param n Pointer to second matrix
+  * \param order 0 to concatenate along rows, 1 to concatenate along columns
+  * \return Concatenated matrix
+  */
+Matrix cat(const Matrix* m, const Matrix* n, int order);
 
-// @params Matrix A, row position of coefficient, column position
-// of coefficient
-// @return Returns cofactor matrix
-// @description Gets the 2x2 cofactor of a matrix at a point given 
-// by the latter two parameters. Matrices must be 2x2 or greater,
-// and must be square
-Matrix getCofactor(Matrix*, size_t, size_t);
+/*!
+ * \brief Gets 2x2 cofactor matrix at a point given by rowPos and colPos
+ * \param m Pointer to matrix to use
+ * \param rowPos Row position of coefficient
+ * \param colPos Column position of coefficient
+ * \return 2x2 cofactor matrix
+ */
+Matrix getCofactor(const Matrix* m, size_t rowPos, size_t colPos);
 
-// @params Matrix A
-// @return Determinant of matrix
-// @description Gets the determinant of a matrix. Matrix A
-// must be a square matrix and be 2x2 or greater.
-float det(Matrix*);
+/*!
+ * \brief Determinant of matrix
+ * \param m Pointer to matrix to use
+ * \return Determinant
+ */
+float det(const Matrix* m);
 
 #endif

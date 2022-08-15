@@ -1,8 +1,8 @@
-// Contains implementations for operations:
-#include "matrix_operators.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+
+#include "matrix_operators.h"
 
 extern int errno;
 
@@ -16,7 +16,7 @@ void transpose(Matrix* m) {
     }
 }
 
-void printMatrix(Matrix *m) {
+void printMatrix(const Matrix *m) {
     for(int i = 0; i < m->row; i++) {
         for(int j = 0; j < m->col; j++) {
             printf("%f ", m->array[i][j]);
@@ -97,7 +97,7 @@ Matrix cat(const Matrix *m, const Matrix *n, int order) {
     return *m;
 }
 
-Matrix getCofactor(Matrix* m, size_t rowPos, size_t colPos) {
+Matrix getCofactor(const Matrix* m, size_t rowPos, size_t colPos) {
     if(m->row > 2 && m->col > 2) {
         Matrix cofactor;
         ma_alloc(&cofactor, m->row-1, m->col-1);
@@ -121,7 +121,7 @@ Matrix getCofactor(Matrix* m, size_t rowPos, size_t colPos) {
     }
 }
 
-float det(Matrix* m) {
+float det(const Matrix* m) {
     errno = 0;
     if((m->row == m->col) && (m->row > 1 && m->col > 1)) {
         if(m->row > 2 && m->col > 2) {

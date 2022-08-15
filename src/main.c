@@ -11,26 +11,29 @@ int main(){
             k1.array[i][j] = j;
         }
     }
+    puts("K:\n");
     printMatrix(&k);
-    printf("\n");
+    puts("\nK1:\n");
     printMatrix(&k1);
-    printf("\n");
     Matrix k6 = ones(4,5);
+    puts("\nK6:\n");
     printMatrix(&k6);
-    printf("\n");
+    puts("\nK6 reallocated:\n");
     ma_realloc(&k6,6,5);
     printMatrix(&k6);
-    printf("\n");
+    puts("\nK6 as K and K1 concatenated:\n");
     k6 = cat(&k,&k1,1);
     printMatrix(&k6);
-    printf("\n");
+    puts("\nK3 as cofactor of K6:\n");
     Matrix k3 = getCofactor(&k6, 0, 0);
     printMatrix(&k3);
-    printf("\n");
+
     ma_realloc(&k3, 3, 3);
-    printf("%f\n", det(&k3));
+    printf("\nDeterminant of K3: %f\n", det(&k3));
+
     ma_free(&k);
     ma_free(&k1);
     ma_free(&k3);
     ma_free(&k6);
+
 }
