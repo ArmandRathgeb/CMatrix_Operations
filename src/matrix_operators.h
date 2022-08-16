@@ -25,8 +25,18 @@ typedef struct Matrices {
 } Matrix;
 
 /*!
+ * \struct Point
+ * \brief Contains a point
+ * \details coords start at the top left of the matrix
+ */
+typedef struct Points {
+  size_t x; /**< x position */
+  size_t y; /**< y position */
+} Point;
+
+/*!
  * \brief Allocate matrices
- * \details Uses malloc() under the hood to allocate a 2D matrix
+ * \details Uses calloc() under the hood to allocate a 2D matrix
  * \param matrix Pointer to matrix to allocate
  * \param m Row size
  * \param n Column size
@@ -137,5 +147,21 @@ Matrix getCofactor(const Matrix* m, size_t rowPos, size_t colPos);
  * \return Determinant
  */
 float det(const Matrix* m);
+
+/*!
+ * \brief Finds the saddle point of a matrix
+ * \details The saddle point is the minimum in its row, and max in its column
+ * \param m Pointer to matrix
+ * \return Point where sadddle is
+ */
+Point saddle(const Matrix* m);
+
+/*!
+ * \brief Fill a matrix with random numbers
+ * \param m Pointer to matrix
+ * \param min Minimum
+ * \param max Max
+ */
+void ma_rand(Matrix* m, int min, int max);
 
 #endif

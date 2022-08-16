@@ -3,8 +3,8 @@
 
 int main(){
     Matrix k,k1; 
-    int status = ma_alloc(&k,5,5);
-    status = ma_alloc(&k1,5,5);
+    ma_alloc(&k,5,5);
+    ma_alloc(&k1,5,5);
     for(int i = 0; i < 5; i++){
         for(int j = 0; j < 5; j++){
             k.array[i][j] = j;
@@ -31,9 +31,26 @@ int main(){
     ma_realloc(&k3, 3, 3);
     printf("\nDeterminant of K3: %f\n", det(&k3));
 
+    Matrix k4;
+    ma_alloc(&k4, 3, 3);
+    for (int i = 0, j = 9; i < 3; ++i) {
+        for (int k = 0; k < 3; ++k, --j) {
+            k4.array[i][k] = j;
+        }
+    }
+    puts("\nMatrix K4:\n");
+    printMatrix(&k4);
+
+    Point a = saddle(&k4);
+    printf("\nSaddle at: %zu,%zu\n", a.x, a.y);
+
+    ma_rand(&k4, 0, 1);
+    printMatrix(&k4);
+
     ma_free(&k);
     ma_free(&k1);
     ma_free(&k3);
+    ma_free(&k4);
     ma_free(&k6);
 
 }

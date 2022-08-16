@@ -9,16 +9,16 @@ extern int errno;
 void transpose(Matrix* m) {
     Matrix temp = *m;
     ma_realloc(m, m->col, m->row);
-    for(int i = 0; i < m->row; i++) {
-        for(int j = 0; j < m->col; j++) {
+    for (size_t i = 0; i < m->row; i++) {
+        for (size_t j = 0; j < m->col; j++) {
             m->array[i][j] = temp.array[j][i];    
         }
     }
 }
 
 void printMatrix(const Matrix *m) {
-    for(int i = 0; i < m->row; i++) {
-        for(int j = 0; j < m->col; j++) {
+    for (size_t i = 0; i < m->row; i++) {
+        for (size_t j = 0; j < m->col; j++) {
             printf("%f ", m->array[i][j]);
         }
         printf("\n");
@@ -28,7 +28,7 @@ void printMatrix(const Matrix *m) {
 Matrix identityMatrix(size_t size) {
     Matrix ret;
     ma_alloc(&ret, size, size);
-    for(int i = 0; i < size; i++)
+    for (size_t i = 0; i < size; i++)
         ret.array[i][i] = 1;
     return ret;
 }
@@ -36,8 +36,8 @@ Matrix identityMatrix(size_t size) {
 Matrix ones(size_t m, size_t n) {
     Matrix one;
     ma_alloc(&one, m, n);
-    for(int i = 0; i < m; i++) {
-        for(int j = 0; j < n; j++)
+    for (size_t i = 0; i < m; i++) {
+        for (size_t j = 0; j < n; j++)
             one.array[i][j] = 1;
     }
     return one;
@@ -49,18 +49,18 @@ Matrix cat(const Matrix *m, const Matrix *n, int order) {
     switch(order) {
     case 0:
         // Rows must be the same height
-        if(m->row != n->row) {
+        if (m->row != n->row) {
             errno = EINVAL;
             perror("Rows must be the same size");
             break;
         }
 
-        ma_alloc(&ret,m->row,m->col+n->col); 
+        ma_alloc(&ret, m->row, m->col + n->col); 
 
-        for(int i = 0; i < ret.row; i++) {
-            for(int j = 0; j < ret.col; j++) {
-                int coltemp = j - n->col;
-                if(coltemp < 0) {
+        for (size_t i = 0; i < ret.row; i++) {
+            for (size_t j = 0; j < ret.col; j++) {
+                long int coltemp = j - n->col;
+                if (coltemp < 0) {
                     ret.array[i][j] = m->array[i][j];
                 } else {
                     ret.array[i][j] = n->array[i][coltemp];
@@ -71,17 +71,17 @@ Matrix cat(const Matrix *m, const Matrix *n, int order) {
         return ret;
     case 1:
         // Columns must be the same height
-        if(m->col != n->col) {
+        if (m->col != n->col) {
             errno = EINVAL;
             perror("Columns must be the same size");
             break;
         }
-        ma_alloc(&ret, m->row+n->row,m->col);
+        ma_alloc(&ret, m->row + n->row, m->col);
 
-        for(int i = 0; i < ret.row; ++i) {
-            for(int j = 0; j < ret.col; ++j) {
-                int rowtemp = i - n->row;
-                if(rowtemp < 0) {
+        for (size_t i = 0; i < ret.row; ++i) {
+            for (size_t j = 0; j < ret.col; ++j) {
+                long int rowtemp = i - n->row;
+                if (rowtemp < 0) {
                     ret.array[i][j] = m->array[i][j];
                 } else {
                     ret.array[i][j] = n->array[rowtemp][j];
@@ -101,8 +101,8 @@ Matrix getCofactor(const Matrix* m, size_t rowPos, size_t colPos) {
     if(m->row > 2 && m->col > 2) {
         Matrix cofactor;
         ma_alloc(&cofactor, m->row-1, m->col-1);
-        for(int i = 0, mi = 0; mi < m->row; ++mi) {
-            for(int j = 0, mj = 0; mj < m->col; ++mj) {
+        for(size_t i = 0, mi = 0; mi < m->row; ++mi) {
+            for(size_t j = 0, mj = 0; mj < m->col; ++mj) {
                 if(mj != colPos) {
                     // Set cofactor array at position i,j to value at
                     // array mi,mj
@@ -143,4 +143,37 @@ float det(const Matrix* m) {
         perror("Matrix must be square");
         return FAIL;
     }
+}
+
+static int min(float a, float b) { return a < b; }
+
+static int max(float a, float b) { return a > b; }
+
+static size_t min_max(float* vec, size_t len, int (*cmp)(float, float)) {
+    float min = vec[0];
+    size_t indice = 0;
+    for (size_t i = 1; i < len; ++i) {
+        if (cmp(vec[i], min) ) {
+            indice = i;
+        }
+    }
+    return indice;
+}
+
+Point saddle(const Matrix* m) {
+    errno = 0;
+    Point p = { 0, 0 };
+    for (size_t i = 0; i < m->row; ++i) {
+        p.y = min_max(m->array[i], m->col, &max);
+        float max = m->array[p.y][0];
+        for (size_t j = 1; j < m->col; ++j) {
+            if (max > m->array[p.y][j]) {
+                p.x = j;
+            } else {
+                break;
+            }
+        }
+    }
+
+    return p;
 }
